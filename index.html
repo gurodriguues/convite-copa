@@ -75,23 +75,23 @@ body {
 .page {
   position: relative; z-index: 2;
   max-width: 860px; margin: 0 auto;
-  padding: 40px 14px 30px;
+  padding: 34px 12px 24px;
 }
 
 /* ── HERO ── */
 .hero {
-  text-align: center; padding: 8px 0 20px;
+  text-align: center; padding: 4px 0 12px;
   animation: up .8s cubic-bezier(.34,1.56,.64,1) both;
 }
 
 @keyframes up { from{opacity:0;transform:translateY(-24px) scale(.95)} to{opacity:1;transform:none} }
 
-.hero-balls { font-size: 22px; letter-spacing: 6px; margin-bottom: 6px;
+.hero-balls { font-size: 18px; letter-spacing: 4px; margin-bottom: 4px;
   animation: up .8s cubic-bezier(.34,1.56,.64,1) .15s both; }
 
 .hero-h1 {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(38px,9vw,72px);
+  font-size: clamp(32px,8vw,72px);
   line-height: .9; letter-spacing: 3px;
   color: var(--yellow);
   text-shadow: 3px 3px 0 #1a5c08, 6px 6px 0 #0c3404, 0 0 60px rgba(255,224,0,.25);
@@ -99,20 +99,20 @@ body {
 }
 
 .hero-h1 .wl {
-  display: block; color: #fff; font-size: clamp(28px,6vw,52px);
+  display: block; color: #fff; font-size: clamp(22px,5.5vw,52px);
   text-shadow: 3px 3px 0 #0a3a6a, 6px 6px 0 #041f40;
 }
 
 .vai {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(20px,4vw,36px);
+  font-size: clamp(16px,3.5vw,36px);
   letter-spacing: 8px; color: var(--g-light);
   text-shadow: 2px 2px 0 #04280e;
   margin-top: 8px;
   animation: up .8s cubic-bezier(.34,1.56,.64,1) .3s both;
 }
 
-.trophies { font-size: 20px; letter-spacing: 10px; margin-top: 6px;
+.trophies { font-size: 16px; letter-spacing: 8px; margin-top: 4px;
   animation: up .8s ease .42s both; }
 
 /* ── CARD ── */
@@ -121,8 +121,8 @@ body {
   border: 1.5px solid rgba(255,224,0,.22);
   border-radius: 22px;
   backdrop-filter: blur(10px);
-  padding: 20px 22px;
-  margin-bottom: 14px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
   animation: up .6s ease both;
 }
 
@@ -131,24 +131,24 @@ body {
 
 .ch {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 27px; letter-spacing: 4px; color: var(--yellow);
-  display: flex; align-items: center; gap: 10px;
-  border-bottom: 1px solid rgba(255,224,0,.13); padding-bottom: 12px; margin-bottom: 18px;
+  font-size: 22px; letter-spacing: 3px; color: var(--yellow);
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(255,224,0,.13); padding-bottom: 8px; margin-bottom: 12px;
 }
 
 /* ── INFO GRID ── */
-.ig { display: grid; grid-template-columns: repeat(auto-fit,minmax(168px,1fr)); gap: 12px; }
+.ig { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 .ii {
-  background: rgba(0,0,0,.24); border-radius: 14px; padding: 13px 15px;
-  display: flex; align-items: flex-start; gap: 12px;
+  background: rgba(0,0,0,.24); border-radius: 12px; padding: 10px 11px;
+  display: flex; align-items: flex-start; gap: 9px;
   transition: background .2s, transform .2s;
 }
 .ii:hover { background: rgba(255,224,0,.1); transform: translateY(-2px); }
 
-.ie { font-size: 26px; flex-shrink: 0; line-height: 1; }
-.il { font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: var(--yellow); margin-bottom: 4px; }
-.iv { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.45; }
+.ie { font-size: 22px; flex-shrink: 0; line-height: 1; }
+.il { font-size: 9px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--yellow); margin-bottom: 4px; }
+.iv { font-size: 12px; font-weight: 700; color: #fff; line-height: 1.4; }
 
 /* ── OBS ── */
 .obs-list { list-style: none; display: flex; flex-direction: column; gap: 11px; }
@@ -168,7 +168,7 @@ body {
 @media(max-width:640px){ .bg2{ grid-template-columns:1fr; } }
 
 /* ── FORM ── */
-.fw { margin-bottom: 15px; }
+.fw { margin-bottom: 10px; }
 .fl { display: block; font-size: 11px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #a0e880; margin-bottom: 7px; }
 
 .fi {
@@ -185,10 +185,10 @@ body {
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 60%{transform:translateX(6px)} }
 
 .bsave {
-  width: 100%; padding: 14px;
+  width: 100%; padding: 11px;
   background: var(--yellow); color: var(--g-dark);
-  border: none; border-radius: 14px;
-  font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 4px;
+  border: none; border-radius: 12px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px;
   cursor: pointer; margin-top: 4px;
   box-shadow: 0 4px 20px rgba(255,224,0,.3);
   transition: background .15s, transform .1s, box-shadow .15s;
@@ -207,7 +207,7 @@ body {
 }
 
 .lscroll {
-  max-height: 380px; overflow-y: auto; padding-right: 3px;
+  max-height: 260px; overflow-y: auto; padding-right: 3px;
   display: flex; flex-direction: column; gap: 8px;
 }
 .lscroll::-webkit-scrollbar{ width:4px; }
@@ -268,11 +268,12 @@ body {
 .toast.show { transform: translateX(-50%) translateY(0); }
 
 /* ── FOOTER ── */
-.foot { text-align:center; padding:28px 0 12px; font-size:13px; font-weight:700; color:rgba(255,255,255,.18); letter-spacing:2px; }
+.foot { text-align:center; padding:14px 0 8px; font-size:11px; font-weight:700; color:rgba(255,255,255,.18); letter-spacing:2px; }
 
-@media(max-width:480px){
-  .card{padding:18px 16px}
-  .ig{grid-template-columns:1fr 1fr}
+@media(max-width:360px){
+  .card{padding:12px 10px}
+  .ch{font-size:18px}
+  .iv{font-size:11px}
 }
 
 
@@ -319,16 +320,9 @@ body {
       <div class="ii"><div class="ie">📍</div><div><div class="il">Endereço</div><div class="iv">Rua Vera Corene, 01<br>Vila curuça velha</div></div></div>
       <div class="ii"><div class="ie">📅</div><div><div class="il">Data</div><div class="iv">Sábado<br>13 de Junho de 2026</div></div></div>
       <div class="ii"><div class="ie">⏰</div><div><div class="il">Horário</div><div class="iv">Esquenta às 17h 🎉<br>Jogo às 18h ⚽</div></div></div>
-      <div class="ii"><div class="ie">👕</div><div><div class="il">Traje</div><div class="iv">Camisa do Brasil ou<br>cores da seleção 🇧🇷</div></div></div>
+      <div class="ii"><div class="ie">👕</div><div><div class="il">Traje</div><div class="iv">Camisa do Brasil ou cores da seleção 🇧🇷</div></div></div>
+      <div class="ii"><div class="ie">🍽️</div><div><div class="il">Petisco</div><div class="iv">Cada um traz um pratinho e sua bebida alcoólica 🥂</div></div></div>
     </div>
-  </div>
-
-  <!-- OBS -->
-  <div class="card">
-    <div class="ch">🍺 Observações</div>
-    <ul class="obs-list">
-      <li class="oi"><span class="oi-ico">🥘</span><span>Cada um traz um pratinho e sua bebida alcoólica<strong>
-    </ul>
   </div>
 
   <!-- FORM + LIST -->
