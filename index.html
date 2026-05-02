@@ -238,14 +238,51 @@ body {
 .gnum { font-family:'Bebas Neue',sans-serif; font-size:16px; color:rgba(255,224,0,.32); flex-shrink:0; }
 
 .bdel {
-  width: 28px; height: 28px; border-radius: 8px;
-  background: rgba(255,70,70,.14); border: 1px solid rgba(255,70,70,.22);
-  color: #ff7878; font-size: 13px; cursor: pointer;
+  height: 28px; padding: 0 10px; border-radius: 8px;
+  background: rgba(255,224,0,.13); border: 1px solid rgba(255,224,0,.28);
+  color: #FFE000; font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  cursor: pointer; white-space: nowrap;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   transition: background .15s, transform .1s;
 }
-.bdel:hover { background: rgba(255,70,70,.28); }
+.bdel:hover { background: rgba(255,224,0,.26); }
 .bdel:active { transform: scale(.88); }
+
+/* ── EDIT MODAL ── */
+.edit-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.edit-box {
+  background: #0d3a18; border: 1.5px solid rgba(255,224,0,.35);
+  border-radius: 20px; padding: 24px 22px; width: 90%; max-width: 340px;
+  animation: up .35s cubic-bezier(.34,1.56,.64,1);
+}
+.edit-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px;
+  color: var(--yellow); margin-bottom: 16px;
+}
+.edit-actions { display: flex; gap: 10px; margin-top: 14px; }
+.bedit-save {
+  flex: 1; padding: 10px;
+  background: var(--yellow); color: var(--g-dark);
+  border: none; border-radius: 10px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+  cursor: pointer; transition: background .15s, transform .1s;
+}
+.bedit-save:hover { background: var(--yellow2); }
+.bedit-save:active { transform: scale(.97); }
+.bedit-cancel {
+  flex: 1; padding: 10px;
+  background: rgba(255,255,255,.08); color: rgba(255,255,255,.7);
+  border: 1px solid rgba(255,255,255,.15); border-radius: 10px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+  cursor: pointer; transition: background .15s;
+}
+.bedit-cancel:hover { background: rgba(255,255,255,.14); }
 
 .empty {
   text-align: center; padding: 30px 12px; color: rgba(255,255,255,.22);
@@ -319,7 +356,7 @@ body {
     <div class="ig">
       <div class="ii"><div class="ie">📍</div><div><div class="il">Endereço</div><div class="iv">Rua Vera Corene, 01<br>Vila curuça velha</div></div></div>
       <div class="ii"><div class="ie">📅</div><div><div class="il">Data</div><div class="iv">Sábado<br>13 de Junho de 2026</div></div></div>
-      <div class="ii"><div class="ie">⏰</div><div><div class="il">Horário</div><div class="iv">Esquenta às 17h 🎉<br>Jogo às 18h ⚽</div></div></div>
+      <div class="ii"><div class="ie">⏰</div><div><div class="il">Horário</div><div class="iv">Esquenta às 17h 🎉<br>Jogo às 19h ⚽</div></div></div>
       <div class="ii"><div class="ie">👕</div><div><div class="il">Traje</div><div class="iv">Camisa do Brasil ou cores da seleção 🇧🇷</div></div></div>
       <div class="ii"><div class="ie">🍽️</div><div><div class="il">Petisco</div><div class="iv">Cada um traz um pratinho e sua bebida alcoólica 🥂</div></div></div>
     </div>
@@ -338,7 +375,7 @@ body {
         <label class="fl" for="ifood">🍗 O que vai trazer?</label>
         <input id="ifood" class="fi" type="text" placeholder="Ex: Salgados, torta..." maxlength="50" autocomplete="off">
       </div>
-      <button class="bsave" id="btnSalvar" onclick="salvar()">⚽ SALVAR PRESENÇA</button>
+      <button class="bsave" id="btnSalvar">⚽ SALVAR PRESENÇA</button>
     </div>
 
     <div class="card" style="animation-delay:.75s">
@@ -376,7 +413,7 @@ body {
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   // ── FIREBASE CONFIG ──
   const firebaseConfig = {
@@ -429,22 +466,54 @@ body {
           '<div class="gfood">🍽️ '+esc(g.food)+'</div>'+
         '</div>'+
         '<div class="gnum">#'+(i+1)+'</div>'+
-        '<button class="bdel" data-key="'+key+'" title="Remover">✕</button>';
+        '<button class="bdel" data-key="'+key+'" data-name="'+esc(g.name)+'" data-food="'+esc(g.food)+'" title="Editar">Editar</button>';
       list.appendChild(d);
     });
     list.scrollTop = list.scrollHeight;
 
-    // bind delete buttons
+    // bind edit buttons
     list.querySelectorAll('.bdel').forEach(function(btn){
       btn.addEventListener('click', function(){
-        var key = this.dataset.key;
-        var el = document.querySelector('.gi[data-id="'+key+'"]');
-        if(el){ el.classList.add('removing'); }
-        setTimeout(function(){
-          remove(ref(db, 'guests/' + key));
-          toast('Removido da lista 🗑️');
-        }, 280);
+        openEditModal(this.dataset.key, this.dataset.name, this.dataset.food);
       });
+    });
+  }
+
+  // ── EDIT MODAL ──
+  function openEditModal(key, name, food){
+    var overlay = document.createElement('div');
+    overlay.className = 'edit-overlay';
+    overlay.innerHTML =
+      '<div class="edit-box">'+
+        '<div class="edit-title">✏️ Editar convidado</div>'+
+        '<div class="fw"><label class="fl">👤 Nome</label>'+
+          '<input id="ename" class="fi" type="text" maxlength="40" autocomplete="off"></div>'+
+        '<div class="fw"><label class="fl">🍗 O que vai trazer?</label>'+
+          '<input id="efood" class="fi" type="text" maxlength="50" autocomplete="off"></div>'+
+        '<div class="edit-actions">'+
+          '<button class="bedit-cancel" id="editCancel">CANCELAR</button>'+
+          '<button class="bedit-save" id="editSave">SALVAR</button>'+
+        '</div>'+
+      '</div>';
+    document.body.appendChild(overlay);
+
+    var ne = overlay.querySelector('#ename');
+    var fe = overlay.querySelector('#efood');
+    ne.value = name; fe.value = food;
+    ne.focus(); ne.select();
+
+    function close(){ document.body.removeChild(overlay); }
+
+    overlay.querySelector('#editCancel').addEventListener('click', close);
+    overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
+
+    overlay.querySelector('#editSave').addEventListener('click', function(){
+      var n = ne.value.trim(), f = fe.value.trim();
+      if(!n){ ne.classList.add('err'); setTimeout(function(){ ne.classList.remove('err'); },600); return; }
+      if(!f){ fe.classList.add('err'); setTimeout(function(){ fe.classList.remove('err'); },600); return; }
+      set(ref(db, 'guests/'+key), { name: n, food: f, ts: Date.now() })
+        .then(function(){ toast('Editado com sucesso! ✅'); close(); })
+        .catch(function(){ toast('Erro ao editar. Tente novamente!', true); });
     });
   }
 
@@ -454,7 +523,7 @@ body {
   });
 
   // ── SALVAR ──
-  window.salvar = function(){
+  function salvar(){
     var ne = document.getElementById('iname');
     var fe = document.getElementById('ifood');
     var n = ne.value.trim(), f = fe.value.trim();
@@ -470,7 +539,7 @@ body {
       .then(function(){
         ne.value=''; fe.value=''; ne.focus();
         toast('Confirmado! Vai Brasil! 🇧🇷⚽');
-        confetti();
+        if(window.confetti) window.confetti();
       })
       .catch(function(){
         toast('Erro ao salvar. Tente novamente!', true);
@@ -483,7 +552,7 @@ body {
 
   // ── TOAST ──
   var tt;
-  window.toast = function(msg, err){
+  function toast(msg, err){
     var t = document.getElementById('toast');
     t.textContent = msg;
     t.className = 'toast'+(err?' err':'');
@@ -491,11 +560,14 @@ body {
     t.classList.add('show');
     clearTimeout(tt);
     tt = setTimeout(function(){ t.classList.remove('show'); }, 3000);
-  };
+  }
+
+  // ── BUTTON ──
+  document.getElementById('btnSalvar').addEventListener('click', salvar);
 
   // ── KEYBOARD ──
   document.getElementById('iname').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('ifood').focus(); });
-  document.getElementById('ifood').addEventListener('keydown',function(e){ if(e.key==='Enter') window.salvar(); });
+  document.getElementById('ifood').addEventListener('keydown',function(e){ if(e.key==='Enter') salvar(); });
 
 </script>
 
@@ -517,7 +589,7 @@ body {
 
 // ── CONFETTI ──
 var pieces=[], running=false;
-function confetti(){
+window.confetti = function confetti(){
   var cv = document.getElementById('cv');
   cv.width = window.innerWidth; cv.height = window.innerHeight;
   var ctx = cv.getContext('2d');
