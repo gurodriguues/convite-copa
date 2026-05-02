@@ -195,6 +195,7 @@ body {
 }
 .bsave:hover { background: var(--yellow2); box-shadow: 0 6px 30px rgba(255,224,0,.45); }
 .bsave:active { transform: scale(.97); }
+.bsave:disabled { opacity: .6; cursor: not-allowed; }
 
 /* ── LIST ── */
 .lmeta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
@@ -389,7 +390,7 @@ body {
         <label class="fl" for="ifood">🍗 O que vai trazer?</label>
         <input id="ifood" class="fi" type="text" placeholder="Ex: Salgados, torta..." maxlength="50" autocomplete="off">
       </div>
-      <button class="bsave" onclick="salvar()">⚽ SALVAR PRESENÇA</button>
+      <button class="bsave" id="btnSalvar" onclick="salvar()">⚽ SALVAR PRESENÇA</button>
     </div>
 
     <div class="card" style="animation-delay:.75s">
@@ -397,20 +398,161 @@ body {
       <div class="lmeta">
         <div class="lbadge" id="badge">0 confirmados</div>
       </div>
-      <div class="lscroll" id="glist"></div>
+      <div class="lscroll" id="glist">
+        <div class="empty"><span class="ei">⚽</span><span class="et">Carregando lista...<br>Aguarde! ⏳</span></div>
+      </div>
     </div>
 
   </div>
 
-  
-<div class="foot">⚽ Copa do Mundo 2026 — Vai Brasil! 🇧🇷</div>
+  <div class="foot">⚽ Copa do Mundo 2026 — Vai Brasil! 🇧🇷</div>
 
 </main>
 
+<!-- Music Player -->
+<div id="player">
+  <button class="p-btn" id="pbtn" onclick="toggleMusic()">▶</button>
+  <div class="p-info">
+    <div class="p-title">We Are One (Ole Ola)</div>
+    <div class="p-sub">Copa do Mundo 2026 🎵</div>
+  </div>
+  <div class="p-wave paused" id="pwave">
+    <div class="p-bar"></div><div class="p-bar"></div><div class="p-bar"></div>
+    <div class="p-bar"></div><div class="p-bar"></div>
+  </div>
+  <input class="p-vol" id="pvol" type="range" min="0" max="1" step=".05" value=".5">
+</div>
+
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ── FIREBASE CONFIG ──
+  const firebaseConfig = {
+    apiKey: "AIzaSyC82z3hXGJIMEdCHN1PGL_Hyram3nbrUPI",
+    authDomain: "convite-copa-f1f9e.firebaseapp.com",
+    databaseURL: "https://convite-copa-f1f9e-default-rtdb.firebaseio.com",
+    projectId: "convite-copa-f1f9e",
+    storageBucket: "convite-copa-f1f9e.firebasestorage.app",
+    messagingSenderId: "250990909040",
+    appId: "1:250990909040:web:387724da3d6e537e5286b5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const guestsRef = ref(db, 'guests');
+
+  // ── HELPERS ──
+  function initials(n){
+    var p = n.trim().split(/\s+/);
+    return p.length >= 2 ? (p[0][0]+p[1][0]).toUpperCase() : n.substring(0,2).toUpperCase();
+  }
+
+  function esc(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── RENDER ──
+  function render(guests){
+    var list = document.getElementById('glist');
+    var badge = document.getElementById('badge');
+    var entries = Object.entries(guests || {});
+
+    badge.textContent = entries.length === 0 ? '0 confirmados' :
+      entries.length === 1 ? '1 confirmado 🎉' : entries.length + ' confirmados 🎉';
+
+    if(entries.length === 0){
+      list.innerHTML = '<div class="empty"><span class="ei">⚽</span><span class="et">Nenhuma confirmação ainda.<br>Seja o primeiro! 🎉</span></div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    entries.forEach(function([key, g], i){
+      var d = document.createElement('div');
+      d.className = 'gi';
+      d.dataset.id = key;
+      d.innerHTML =
+        '<div class="gav">'+esc(initials(g.name))+'</div>'+
+        '<div class="ginfo">'+
+          '<div class="gname">'+esc(g.name)+'</div>'+
+          '<div class="gfood">🍽️ '+esc(g.food)+'</div>'+
+        '</div>'+
+        '<div class="gnum">#'+(i+1)+'</div>'+
+        '<button class="bdel" data-key="'+key+'" title="Remover">✕</button>';
+      list.appendChild(d);
+    });
+    list.scrollTop = list.scrollHeight;
+
+    // bind delete buttons
+    list.querySelectorAll('.bdel').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var key = this.dataset.key;
+        var el = document.querySelector('.gi[data-id="'+key+'"]');
+        if(el){ el.classList.add('removing'); }
+        setTimeout(function(){
+          remove(ref(db, 'guests/' + key));
+          toast('Removido da lista 🗑️');
+        }, 280);
+      });
+    });
+  }
+
+  // ── LISTEN REALTIME ──
+  onValue(guestsRef, function(snapshot){
+    render(snapshot.val());
+  });
+
+  // ── SALVAR ──
+  window.salvar = function(){
+    var ne = document.getElementById('iname');
+    var fe = document.getElementById('ifood');
+    var n = ne.value.trim(), f = fe.value.trim();
+
+    if(!n){ ne.classList.add('err'); setTimeout(function(){ ne.classList.remove('err'); },600); toast('Por favor, informe seu nome! 😊', true); ne.focus(); return; }
+    if(!f){ fe.classList.add('err'); setTimeout(function(){ fe.classList.remove('err'); },600); toast('O que você vai trazer? 🍗', true); fe.focus(); return; }
+
+    var btn = document.getElementById('btnSalvar');
+    btn.disabled = true;
+    btn.textContent = 'Salvando...';
+
+    push(guestsRef, { name: n, food: f, ts: Date.now() })
+      .then(function(){
+        ne.value=''; fe.value=''; ne.focus();
+        toast('Confirmado! Vai Brasil! 🇧🇷⚽');
+        confetti();
+      })
+      .catch(function(){
+        toast('Erro ao salvar. Tente novamente!', true);
+      })
+      .finally(function(){
+        btn.disabled = false;
+        btn.textContent = '⚽ SALVAR PRESENÇA';
+      });
+  };
+
+  // ── TOAST ──
+  var tt;
+  window.toast = function(msg, err){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast'+(err?' err':'');
+    void t.offsetWidth;
+    t.classList.add('show');
+    clearTimeout(tt);
+    tt = setTimeout(function(){ t.classList.remove('show'); }, 3000);
+  };
+
+  // ── KEYBOARD ──
+  document.getElementById('iname').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('ifood').focus(); });
+  document.getElementById('ifood').addEventListener('keydown',function(e){ if(e.key==='Enter') window.salvar(); });
+
+</script>
+
 <script>
-// ── BUNTING ──────────────────────────────────────────────
+// ── BUNTING ──
 (function(){
   var wrap = document.getElementById('bunting-wrap');
   var cols = ['#2db84b','#FFE000','#1565c0','#fff','#e53935','#FFE000','#2db84b'];
@@ -425,101 +567,13 @@ body {
   }
 })();
 
-// ── STATE ─────────────────────────────────────────────────
-var guests = [];
-
-function load(){
-  try{ var s = localStorage.getItem('copa26'); if(s) guests = JSON.parse(s); }catch(e){ guests=[]; }
-}
-
-function save(){
-  try{ localStorage.setItem('copa26', JSON.stringify(guests)); }catch(e){}
-}
-
-function initials(n){
-  var p = n.trim().split(/\s+/);
-  return p.length >= 2 ? (p[0][0]+p[1][0]).toUpperCase() : n.substring(0,2).toUpperCase();
-}
-
-function esc(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── RENDER ────────────────────────────────────────────────
-function render(){
-  var list = document.getElementById('glist');
-  var badge = document.getElementById('badge');
-
-  badge.textContent = guests.length === 0 ? '0 confirmados' :
-    guests.length === 1 ? '1 confirmado 🎉' : guests.length + ' confirmados 🎉';
-
-  if(guests.length === 0){
-    list.innerHTML = '<div class="empty"><span class="ei">⚽</span><span class="et">Nenhuma confirmação ainda.<br>Seja o primeiro! 🎉</span></div>';
-    return;
-  }
-
-  list.innerHTML = '';
-  guests.forEach(function(g, i){
-    var d = document.createElement('div');
-    d.className = 'gi';
-    d.dataset.id = g.id;
-    d.innerHTML =
-      '<div class="gav">'+esc(initials(g.name))+'</div>'+
-      '<div class="ginfo">'+
-        '<div class="gname">'+esc(g.name)+'</div>'+
-        '<div class="gfood">🍽️ '+esc(g.food)+'</div>'+
-      '</div>'+
-      '<div class="gnum">#'+(i+1)+'</div>'+
-      '<button class="bdel" onclick="remover(\''+g.id+'\')" title="Remover">✕</button>';
-    list.appendChild(d);
-  });
-  list.scrollTop = list.scrollHeight;
-}
-
-// ── SALVAR ────────────────────────────────────────────────
-function salvar(){
-  var ne = document.getElementById('iname');
-  var fe = document.getElementById('ifood');
-  var n = ne.value.trim(), f = fe.value.trim();
-
-  if(!n){ ne.classList.add('err'); setTimeout(function(){ ne.classList.remove('err'); },600); toast('Por favor, informe seu nome! 😊', true); ne.focus(); return; }
-  if(!f){ fe.classList.add('err'); setTimeout(function(){ fe.classList.remove('err'); },600); toast('O que você vai trazer? 🍗', true); fe.focus(); return; }
-
-  guests.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:n, food:f });
-  save(); render();
-  ne.value=''; fe.value=''; ne.focus();
-  toast('Confirmado! Vai Brasil! 🇧🇷⚽');
-  confetti();
-}
-
-// ── REMOVER ───────────────────────────────────────────────
-function remover(id){
-  var el = document.querySelector('.gi[data-id="'+id+'"]');
-  if(el){ el.classList.add('removing'); setTimeout(function(){ guests=guests.filter(function(g){return g.id!==id;}); save(); render(); },280); }
-  toast('Removido da lista 🗑️');
-}
-
-// ── TOAST ─────────────────────────────────────────────────
-var tt;
-function toast(msg, err){
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast'+(err?' err':'');
-  void t.offsetWidth;
-  t.classList.add('show');
-  clearTimeout(tt);
-  tt = setTimeout(function(){ t.classList.remove('show'); }, 3000);
-}
-
-// ── CONFETTI ──────────────────────────────────────────────
+// ── CONFETTI ──
 var pieces=[], running=false;
-
 function confetti(){
   var cv = document.getElementById('cv');
   cv.width = window.innerWidth; cv.height = window.innerHeight;
   var ctx = cv.getContext('2d');
   var cols = ['#FFE000','#2db84b','#fff','#003087','#ff6b35','#00c853','#e53935'];
-
   for(var i=0;i<90;i++){
     pieces.push({
       x: Math.random()*cv.width, y: -8-Math.random()*80,
@@ -529,7 +583,6 @@ function confetti(){
       r:Math.random()*360, vr:(Math.random()-.5)*9
     });
   }
-
   if(!running){
     running=true;
     (function loop(){
@@ -548,17 +601,8 @@ function confetti(){
   }
 }
 
-// ── KEYBOARD ──────────────────────────────────────────────
-document.getElementById('iname').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('ifood').focus(); });
-document.getElementById('ifood').addEventListener('keydown',function(e){ if(e.key==='Enter') salvar(); });
-
-// ── INIT ──────────────────────────────────────────────────
-load(); render();
-
-// ── MUSIC ─────────────────────────────────────────────────
+// ── MUSIC ──
 var audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-// NOTE: Replace the src above with the actual "We Are One" audio file path when hosting locally.
-// Example: var audio = new Audio('we-are-one.mp3');
 audio.loop = true;
 audio.volume = 0.5;
 var playing = false;
@@ -582,7 +626,7 @@ function toggleMusic(){
 document.getElementById('pvol').addEventListener('input', function(){
   audio.volume = parseFloat(this.value);
 });
-
 </script>
+
 </body>
 </html>
