@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚽ Jogo da Copa lá em casa! 🇧🇷 | convitedogu.com.br</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g-dark: #062d10;
+  --g-mid: #0d5c22;
+  --g-light: #1e9e42;
+  --yellow: #FFE000;
+  --yellow2: #fff480;
+  --blue: #003087;
+  --blue2: #1565c0;
+  --white: #ffffff;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--g-dark);
+}
+
+/* ── CANVAS ── */
+#cv { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+
+/* ── BG ── */
+.bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse at 15% 0%,   #1a7030 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 90%,  #0a2d7a 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%,  #0d5c22 0%, #041808 100%);
+}
+
+.bg-hex {
+  position: absolute; inset: 0; opacity: .055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66L0 50V18L28 2l28 16v32L28 66zm0 18L0 68V84l28 16 28-16V68L28 84z' fill='none' stroke='%23FFE000' stroke-width='.8'/%3E%3C/svg%3E");
+}
+
+.bg-circle {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.05), transparent 70%);
+}
+.bg-circle:nth-child(2){ width:350px;height:350px;top:-100px;right:-80px; }
+.bg-circle:nth-child(3){ width:200px;height:200px;bottom:150px;left:-50px;opacity:.5; }
+
+/* ── BUNTING ── */
+#bunting-wrap {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 3;
+  pointer-events: none; overflow: hidden; height: 26px;
+}
+
+.b-line {
+  position: absolute; top: 10px; left: 0; right: 0;
+  height: 1.5px; background: rgba(255,224,0,.45);
+}
+
+.b-flag {
+  position: absolute; top: 0;
+  width: 26px; height: 18px;
+  clip-path: polygon(0 0,100% 0,50% 100%);
+  animation: sway 2.8s ease-in-out infinite;
+}
+
+@keyframes sway { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+
+/* ── PAGE ── */
+.page {
+  position: relative; z-index: 2;
+  max-width: 860px; margin: 0 auto;
+  padding: 52px 16px 40px;
+}
+
+/* ── HERO ── */
+.hero {
+  text-align: center; padding: 16px 0 36px;
+  animation: up .8s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes up { from{opacity:0;transform:translateY(-24px) scale(.95)} to{opacity:1;transform:none} }
+
+.hero-balls { font-size: 34px; letter-spacing: 10px; margin-bottom: 12px;
+  animation: up .8s cubic-bezier(.34,1.56,.64,1) .15s both; }
+
+.hero-h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(60px,13vw,108px);
+  line-height: .9; letter-spacing: 4px;
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 #1a5c08, 6px 6px 0 #0c3404, 0 0 60px rgba(255,224,0,.25);
+  animation: up .8s cubic-bezier(.34,1.56,.64,1) .05s both;
+}
+
+.hero-h1 .wl {
+  display: block; color: #fff; font-size: clamp(42px,9vw,78px);
+  text-shadow: 3px 3px 0 #0a3a6a, 6px 6px 0 #041f40;
+}
+
+.vai {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(30px,6vw,54px);
+  letter-spacing: 10px; color: var(--g-light);
+  text-shadow: 2px 2px 0 #04280e;
+  margin-top: 14px;
+  animation: up .8s cubic-bezier(.34,1.56,.64,1) .3s both;
+}
+
+.trophies { font-size: 28px; letter-spacing: 14px; margin-top: 10px;
+  animation: up .8s ease .42s both; }
+
+/* ── CARD ── */
+.card {
+  background: rgba(255,255,255,.055);
+  border: 1.5px solid rgba(255,224,0,.22);
+  border-radius: 22px;
+  backdrop-filter: blur(10px);
+  padding: 26px 28px;
+  margin-bottom: 18px;
+  animation: up .6s ease both;
+}
+
+.card:nth-of-type(1){animation-delay:.3s}
+.card:nth-of-type(2){animation-delay:.45s}
+
+.ch {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 27px; letter-spacing: 4px; color: var(--yellow);
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid rgba(255,224,0,.13); padding-bottom: 12px; margin-bottom: 18px;
+}
+
+/* ── INFO GRID ── */
+.ig { display: grid; grid-template-columns: repeat(auto-fit,minmax(168px,1fr)); gap: 12px; }
+
+.ii {
+  background: rgba(0,0,0,.24); border-radius: 14px; padding: 13px 15px;
+  display: flex; align-items: flex-start; gap: 12px;
+  transition: background .2s, transform .2s;
+}
+.ii:hover { background: rgba(255,224,0,.1); transform: translateY(-2px); }
+
+.ie { font-size: 26px; flex-shrink: 0; line-height: 1; }
+.il { font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: var(--yellow); margin-bottom: 4px; }
+.iv { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.45; }
+
+/* ── OBS ── */
+.obs-list { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+
+.oi {
+  display: flex; align-items: flex-start; gap: 13px;
+  background: rgba(0,0,0,.2); border-radius: 14px; padding: 13px 15px;
+  font-size: 15px; font-weight: 700; color: #cff0b0; line-height: 1.5;
+  transition: background .2s;
+}
+.oi:hover { background: rgba(0,0,0,.32); }
+.oi.funny { background: rgba(255,224,0,.08); border: 1px solid rgba(255,224,0,.18); color: #fffde7; }
+.oi-ico { font-size: 24px; flex-shrink: 0; margin-top: 1px; }
+
+/* ── BOTTOM GRID ── */
+.bg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media(max-width:640px){ .bg2{ grid-template-columns:1fr; } }
+
+/* ── FORM ── */
+.fw { margin-bottom: 15px; }
+.fl { display: block; font-size: 11px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #a0e880; margin-bottom: 7px; }
+
+.fi {
+  width: 100%; background: rgba(0,0,0,.35);
+  border: 1.5px solid rgba(255,255,255,.17); border-radius: 12px;
+  padding: 11px 14px;
+  font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; color: #fff;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.fi::placeholder { color: rgba(255,255,255,.28); }
+.fi:focus { border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(255,224,0,.14); }
+.fi.err { border-color: #ff5252; animation: shake .35s ease; }
+
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 60%{transform:translateX(6px)} }
+
+.bsave {
+  width: 100%; padding: 14px;
+  background: var(--yellow); color: var(--g-dark);
+  border: none; border-radius: 14px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 4px;
+  cursor: pointer; margin-top: 4px;
+  box-shadow: 0 4px 20px rgba(255,224,0,.3);
+  transition: background .15s, transform .1s, box-shadow .15s;
+}
+.bsave:hover { background: var(--yellow2); box-shadow: 0 6px 30px rgba(255,224,0,.45); }
+.bsave:active { transform: scale(.97); }
+
+/* ── LIST ── */
+.lmeta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+
+.lbadge {
+  background: rgba(255,224,0,.13); border: 1px solid rgba(255,224,0,.28);
+  border-radius: 50px; padding: 4px 14px;
+  font-size: 13px; font-weight: 800; color: var(--yellow);
+}
+
+.lscroll {
+  max-height: 380px; overflow-y: auto; padding-right: 3px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.lscroll::-webkit-scrollbar{ width:4px; }
+.lscroll::-webkit-scrollbar-thumb{ background:rgba(255,224,0,.3); border-radius:4px; }
+
+.gi {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(0,0,0,.28); border-radius: 12px; padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.05);
+  animation: pop .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+@keyframes pop { from{opacity:0;transform:scale(.82) translateY(10px)} to{opacity:1;transform:none} }
+
+.gi.removing { animation: bye .3s ease forwards; }
+@keyframes bye { to{opacity:0;transform:scale(.8) translateX(18px);max-height:0;padding:0;margin:0;border:none} }
+
+.gav {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--yellow); color: var(--g-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 13px; flex-shrink: 0;
+}
+
+.ginfo { flex: 1; min-width: 0; }
+.gname { font-size: 14px; font-weight: 800; color: #fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gfood { font-size: 12px; font-weight: 600; color: #a0e880; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gnum { font-family:'Bebas Neue',sans-serif; font-size:16px; color:rgba(255,224,0,.32); flex-shrink:0; }
+
+.bdel {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: rgba(255,70,70,.14); border: 1px solid rgba(255,70,70,.22);
+  color: #ff7878; font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background .15s, transform .1s;
+}
+.bdel:hover { background: rgba(255,70,70,.28); }
+.bdel:active { transform: scale(.88); }
+
+.empty {
+  text-align: center; padding: 30px 12px; color: rgba(255,255,255,.22);
+}
+.ei { font-size: 42px; display: block; margin-bottom: 10px; }
+.et { font-size: 13px; font-weight: 700; line-height: 1.6; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 26px; left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--g-light); color: #fff;
+  font-family: 'Fredoka One', cursive; font-size: 16px;
+  padding: 12px 28px; border-radius: 60px;
+  box-shadow: 0 6px 30px rgba(0,0,0,.4);
+  transition: transform .45s cubic-bezier(.34,1.56,.64,1);
+  z-index: 1000; white-space: nowrap; pointer-events: none;
+}
+.toast.err { background: #c0392b; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── FOOTER ── */
+.foot { text-align:center; padding:28px 0 12px; font-size:13px; font-weight:700; color:rgba(255,255,255,.18); letter-spacing:2px; }
+
+@media(max-width:480px){
+  .card{padding:18px 16px}
+  .ig{grid-template-columns:1fr 1fr}
+}
+
+/* ── MUSIC PLAYER ── */
+#player {
+  position: fixed; bottom: 20px; right: 20px; z-index: 998;
+  background: rgba(6,45,16,.92); border: 1.5px solid rgba(255,224,0,.35);
+  border-radius: 18px; padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 6px 32px rgba(0,0,0,.45);
+  animation: up .8s ease 1s both;
+  min-width: 220px;
+}
+
+.p-info { flex: 1; min-width: 0; }
+.p-title { font-size: 11px; font-weight: 800; color: var(--yellow); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .5px; }
+.p-sub { font-size: 10px; color: rgba(255,255,255,.45); margin-top: 1px; font-weight: 600; }
+
+.p-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--yellow); color: var(--g-dark);
+  border: none; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background .15s, transform .1s;
+}
+.p-btn:hover { background: var(--yellow2); }
+.p-btn:active { transform: scale(.92); }
+
+.p-vol { width: 60px; accent-color: var(--yellow); cursor: pointer; }
+
+.p-wave {
+  display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0;
+}
+.p-bar {
+  width: 3px; border-radius: 2px; background: var(--yellow);
+  animation: wave 1s ease-in-out infinite;
+}
+.p-bar:nth-child(1){ height:6px;  animation-delay:0s }
+.p-bar:nth-child(2){ height:14px; animation-delay:.15s }
+.p-bar:nth-child(3){ height:10px; animation-delay:.3s }
+.p-bar:nth-child(4){ height:16px; animation-delay:.45s }
+.p-bar:nth-child(5){ height:8px;  animation-delay:.6s }
+
+@keyframes wave { 0%,100%{transform:scaleY(.4)} 50%{transform:scaleY(1)} }
+
+.p-wave.paused .p-bar { animation-play-state: paused; }
+
+/* ── DOMAIN STRIP ── */
+.domain-strip {
+  text-align: center; padding: 10px 0 0;
+  display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;
+}
+.domain-link {
+  color: rgba(255,224,0,.6); font-size: 13px; font-weight: 800;
+  text-decoration: none; letter-spacing: 1px;
+  border-bottom: 1px dashed rgba(255,224,0,.3);
+  transition: color .2s;
+}
+.domain-link:hover { color: var(--yellow); }
+
+</style>
+</head>
+<body>
+
+<canvas id="cv"></canvas>
+
+<div class="bg">
+  <div class="bg-hex"></div>
+  <div class="bg-circle"></div>
+  <div class="bg-circle"></div>
+</div>
+
+<div id="bunting-wrap"><div class="b-line"></div></div>
+
+<main class="page">
+
+  <section class="hero">
+    <div class="hero-balls">⚽ 🇧🇷 🔥 🇧🇷 ⚽</div>
+    <h1 class="hero-h1">Jogo da Copa<span class="wl">lá em casa!</span></h1>
+    <div class="vai">🏆 VAI BRASIL! 🏆</div>
+    <div class="trophies">🎊 🎉 🎊</div>
+  </section>
+
+  <!-- INFO -->
+  <div class="card">
+    <div class="ch">📋 Informações do evento</div>
+    <div class="ig">
+      <div class="ii"><div class="ie">📍</div><div><div class="il">Endereço</div><div class="iv">Rua Vera Corene, 01<br>Vila curuça velha</div></div></div>
+      <div class="ii"><div class="ie">📅</div><div><div class="il">Data</div><div class="iv">Sábado<br>13 de Junho de 2026</div></div></div>
+      <div class="ii"><div class="ie">⏰</div><div><div class="il">Horário</div><div class="iv">Esquenta às 17h 🎉<br>Jogo às 18h ⚽</div></div></div>
+      <div class="ii"><div class="ie">👕</div><div><div class="il">Traje</div><div class="iv">Camisa do Brasil ou<br>cores da seleção 🇧🇷</div></div></div>
+    </div>
+  </div>
+
+  <!-- OBS -->
+  <div class="card">
+    <div class="ch">🍺 Observações</div>
+    <ul class="obs-list">
+      <li class="oi"><span class="oi-ico">🇧🇷</span><span>Tema típico brasileiro — muito <strong>samba, alegria e festa</strong>! Vista seu melhor verde e amarelo!</span></li>
+      <li class="oi"><span class="oi-ico">🥘</span><span>Cada um deve trazer <strong>um petisco</strong> e <strong>sua própria bebida alcoólica!</strong></span></li>
+      <li class="oi funny"><span class="oi-ico">😄</span><span><strong>PROIBIDO falar mal do Neymar!</strong> 🚫</span></li>
+    </ul>
+  </div>
+
+  <!-- FORM + LIST -->
+  <div class="bg2">
+
+    <div class="card" style="animation-delay:.6s">
+      <div class="ch">✍️ Confirme presença</div>
+      <div class="fw">
+        <label class="fl" for="iname">👤 Seu nome</label>
+        <input id="iname" class="fi" type="text" placeholder="Digite seu nome" maxlength="40" autocomplete="off">
+      </div>
+      <div class="fw">
+        <label class="fl" for="ifood">🍗 O que vai trazer?</label>
+        <input id="ifood" class="fi" type="text" placeholder="Ex: Salgados, torta..." maxlength="50" autocomplete="off">
+      </div>
+      <button class="bsave" onclick="salvar()">⚽ SALVAR PRESENÇA</button>
+    </div>
+
+    <div class="card" style="animation-delay:.75s">
+      <div class="ch">🏟️ Lista de convidados</div>
+      <div class="lmeta">
+        <div class="lbadge" id="badge">0 confirmados</div>
+      </div>
+      <div class="lscroll" id="glist"></div>
+    </div>
+
+  </div>
+
+  
+<div class="foot">⚽ Copa do Mundo 2026 — Vai Brasil! 🇧🇷</div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── BUNTING ──────────────────────────────────────────────
+(function(){
+  var wrap = document.getElementById('bunting-wrap');
+  var cols = ['#2db84b','#FFE000','#1565c0','#fff','#e53935','#FFE000','#2db84b'];
+  var n = Math.ceil(window.innerWidth / 30) + 4;
+  for(var i = 0; i < n; i++){
+    var f = document.createElement('div');
+    f.className = 'b-flag';
+    f.style.left = (i * 30 - 10) + 'px';
+    f.style.background = cols[i % cols.length];
+    f.style.animationDelay = (i * 0.07) + 's';
+    wrap.appendChild(f);
+  }
+})();
+
+// ── STATE ─────────────────────────────────────────────────
+var guests = [];
+
+function load(){
+  try{ var s = localStorage.getItem('copa26'); if(s) guests = JSON.parse(s); }catch(e){ guests=[]; }
+}
+
+function save(){
+  try{ localStorage.setItem('copa26', JSON.stringify(guests)); }catch(e){}
+}
+
+function initials(n){
+  var p = n.trim().split(/\s+/);
+  return p.length >= 2 ? (p[0][0]+p[1][0]).toUpperCase() : n.substring(0,2).toUpperCase();
+}
+
+function esc(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render(){
+  var list = document.getElementById('glist');
+  var badge = document.getElementById('badge');
+
+  badge.textContent = guests.length === 0 ? '0 confirmados' :
+    guests.length === 1 ? '1 confirmado 🎉' : guests.length + ' confirmados 🎉';
+
+  if(guests.length === 0){
+    list.innerHTML = '<div class="empty"><span class="ei">⚽</span><span class="et">Nenhuma confirmação ainda.<br>Seja o primeiro! 🎉</span></div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  guests.forEach(function(g, i){
+    var d = document.createElement('div');
+    d.className = 'gi';
+    d.dataset.id = g.id;
+    d.innerHTML =
+      '<div class="gav">'+esc(initials(g.name))+'</div>'+
+      '<div class="ginfo">'+
+        '<div class="gname">'+esc(g.name)+'</div>'+
+        '<div class="gfood">🍽️ '+esc(g.food)+'</div>'+
+      '</div>'+
+      '<div class="gnum">#'+(i+1)+'</div>'+
+      '<button class="bdel" onclick="remover(\''+g.id+'\')" title="Remover">✕</button>';
+    list.appendChild(d);
+  });
+  list.scrollTop = list.scrollHeight;
+}
+
+// ── SALVAR ────────────────────────────────────────────────
+function salvar(){
+  var ne = document.getElementById('iname');
+  var fe = document.getElementById('ifood');
+  var n = ne.value.trim(), f = fe.value.trim();
+
+  if(!n){ ne.classList.add('err'); setTimeout(function(){ ne.classList.remove('err'); },600); toast('Por favor, informe seu nome! 😊', true); ne.focus(); return; }
+  if(!f){ fe.classList.add('err'); setTimeout(function(){ fe.classList.remove('err'); },600); toast('O que você vai trazer? 🍗', true); fe.focus(); return; }
+
+  guests.push({ id: Date.now().toString(36)+Math.random().toString(36).slice(2,6), name:n, food:f });
+  save(); render();
+  ne.value=''; fe.value=''; ne.focus();
+  toast('Confirmado! Vai Brasil! 🇧🇷⚽');
+  confetti();
+}
+
+// ── REMOVER ───────────────────────────────────────────────
+function remover(id){
+  var el = document.querySelector('.gi[data-id="'+id+'"]');
+  if(el){ el.classList.add('removing'); setTimeout(function(){ guests=guests.filter(function(g){return g.id!==id;}); save(); render(); },280); }
+  toast('Removido da lista 🗑️');
+}
+
+// ── TOAST ─────────────────────────────────────────────────
+var tt;
+function toast(msg, err){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast'+(err?' err':'');
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(tt);
+  tt = setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+// ── CONFETTI ──────────────────────────────────────────────
+var pieces=[], running=false;
+
+function confetti(){
+  var cv = document.getElementById('cv');
+  cv.width = window.innerWidth; cv.height = window.innerHeight;
+  var ctx = cv.getContext('2d');
+  var cols = ['#FFE000','#2db84b','#fff','#003087','#ff6b35','#00c853','#e53935'];
+
+  for(var i=0;i<90;i++){
+    pieces.push({
+      x: Math.random()*cv.width, y: -8-Math.random()*80,
+      w: 7+Math.random()*9, h: 5+Math.random()*5,
+      c: cols[Math.floor(Math.random()*cols.length)],
+      vx:(Math.random()-.5)*4, vy:2+Math.random()*4,
+      r:Math.random()*360, vr:(Math.random()-.5)*9
+    });
+  }
+
+  if(!running){
+    running=true;
+    (function loop(){
+      ctx.clearRect(0,0,cv.width,cv.height);
+      pieces = pieces.filter(function(p){return p.y<cv.height+20;});
+      pieces.forEach(function(p){
+        p.x+=p.vx; p.y+=p.vy; p.vy+=.07; p.r+=p.vr;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r*Math.PI/180);
+        ctx.globalAlpha = Math.min(1,(cv.height-p.y)/200);
+        ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+        ctx.restore();
+      });
+      if(pieces.length>0) requestAnimationFrame(loop);
+      else{ running=false; ctx.clearRect(0,0,cv.width,cv.height); }
+    })();
+  }
+}
+
+// ── KEYBOARD ──────────────────────────────────────────────
+document.getElementById('iname').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('ifood').focus(); });
+document.getElementById('ifood').addEventListener('keydown',function(e){ if(e.key==='Enter') salvar(); });
+
+// ── INIT ──────────────────────────────────────────────────
+load(); render();
+
+// ── MUSIC ─────────────────────────────────────────────────
+var audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+// NOTE: Replace the src above with the actual "We Are One" audio file path when hosting locally.
+// Example: var audio = new Audio('we-are-one.mp3');
+audio.loop = true;
+audio.volume = 0.5;
+var playing = false;
+
+function toggleMusic(){
+  var btn = document.getElementById('pbtn');
+  var wave = document.getElementById('pwave');
+  if(playing){
+    audio.pause();
+    btn.textContent = '▶';
+    wave.classList.add('paused');
+    playing = false;
+  } else {
+    audio.play().catch(function(){});
+    btn.textContent = '⏸';
+    wave.classList.remove('paused');
+    playing = true;
+  }
+}
+
+document.getElementById('pvol').addEventListener('input', function(){
+  audio.volume = parseFloat(this.value);
+});
+
+</script>
+</body>
+</html>
