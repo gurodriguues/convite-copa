@@ -283,6 +283,15 @@ body {
   cursor: pointer; transition: background .15s;
 }
 .bedit-cancel:hover { background: rgba(255,255,255,.14); }
+.bedit-delete {
+  width: 100%; padding: 10px; margin-top: 6px;
+  background: rgba(220,53,69,.15); color: #ff6b6b;
+  border: 1px solid rgba(220,53,69,.35); border-radius: 10px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
+  cursor: pointer; transition: background .15s, transform .1s;
+}
+.bedit-delete:hover { background: rgba(220,53,69,.32); }
+.bedit-delete:active { transform: scale(.97); }
 
 .empty {
   text-align: center; padding: 30px 12px; color: rgba(255,255,255,.22);
@@ -494,6 +503,7 @@ body {
           '<button class="bedit-cancel" id="editCancel">CANCELAR</button>'+
           '<button class="bedit-save" id="editSave">SALVAR</button>'+
         '</div>'+
+        '<button class="bedit-delete" id="editDelete">🗑️ CANCELAR PRESENÇA</button>'+
       '</div>';
     document.body.appendChild(overlay);
 
@@ -514,6 +524,13 @@ body {
       set(ref(db, 'guests/'+key), { name: n, food: f, ts: Date.now() })
         .then(function(){ toast('Editado com sucesso! ✅'); close(); })
         .catch(function(){ toast('Erro ao editar. Tente novamente!', true); });
+    });
+
+    overlay.querySelector('#editDelete').addEventListener('click', function(){
+      if(!confirm('Tem certeza que quer excluir "' + name + '"?')) return;
+      remove(ref(db, 'guests/'+key))
+        .then(function(){ toast('Convidado removido! 🗑️'); close(); })
+        .catch(function(){ toast('Erro ao excluir. Tente novamente!', true); });
     });
   }
 
